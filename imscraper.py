@@ -14,6 +14,7 @@ import requests
 
 import urllib3
 http = urllib3.PoolManager()
+
 import warnings
 warnings.filterwarnings('ignore', message='Unverified HTTPS request')
 
@@ -23,15 +24,17 @@ import PIL.Image as Image
 from html.parser import HTMLParser
 from html.entities import name2codepoint
 
-import argparse
-import os
+import os, sys, argparse
 from tqdm import tqdm
+import string
 
 #------------------------------------------------------------------------------------------------
-# TODO: Add file parsing for keywords (Maybe JSON)
-parser = argparse.ArgumentParser(description='Extracts edges from an image')
-parser.add_argument("-k", help="keyword to search")
-parser.add_argument("-l", help="limit the number of images per keyword")
+parser = argparse.ArgumentParser(description="Scrape images from 'Google Images' webpage")
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-k', type=str, help="keyword to search")
+group.add_argument('-f', type=str, help="file with list of keywords")
+parser.add_argument('-l', type=int, help="limit the number of images per keyword (default=30)", default=30)
+parser.add_argument('-outdir', type=str, help="output directory", default=None)
 args = parser.parse_args()
 
 #------------------------------------------------------------------------------------------------
@@ -52,12 +55,19 @@ headers = {
     } 
 
 #------------------------------------------------------------------------------------------------
-def getImages(search, limit=30):
-	print("Creating directory...")
+def getImages(search, limit=30, outDir=None):
+	print('\n' + "--" * 50)
+	print(f"Keyword:{search}\n")
+	
 	try:
-		os.mkdir(search)
+		print("Creating directory...", end="")
+		if outDir == None:
+			os.mkdir(search)
+		else:
+			os.mkdir(f"{outDir}/{search}")
+		print("Done")
 	except FileExistsError:
-		print("Directory already exits")
+		print("\nDirectory already exits")
 
 	url = f"https://www.google.com/search?q={search}&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjozNPH4J3rAhVUU30KHXRzDSoQ_AUoAXoECBEQAw&biw=1366&bih=625"       
 	response = requests.request("GET", url, headers=headers)
@@ -72,19 +82,33 @@ def getImages(search, limit=30):
 		img_data = BytesIO(response.data)
 		image = Image.open(img_data).convert("RGBA")
 
-		image.save(f"{search}/{count+1}.png")
+		if outDir == None:
+			image.save(f"{search}/{count+1}.png")
+		else:
+			image.save(f"{outDir}/{search}/{count+1}.png")
 		count+=1
 
-	print(f"Downloaded {count}/{limit} images")  
+	print(f"Downloaded {count}/{limit} images")
+	srcExtractor.src = []  
 
 #------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
 	# getImages("fish")
 
-	if args.l == None:
-		getImages(args.k)
+	if args.f == None:
+		getImages(args.k, args.l, args.outdir)
 	else:
-		getImages(args.k, args.l)
+		try:
+			with open(args.f, 'r') as infile:
+				keywords = infile.read().split('\n')
 
+				for each in keywords:
+					if each != "":
+						getImages(each, args.l, args.outdir)
+		except FileNotFoundError:
+			print(f"File not found: {args.f}")
+			sys.exit()
+		except:
+			print("Something went wrong!")
 #------------------------------------------------------------------------------------------------
 #EOF
