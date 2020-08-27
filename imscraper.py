@@ -55,44 +55,63 @@ headers = {
     } 
 
 #------------------------------------------------------------------------------------------------
+import logging
+logging.basicConfig(filename="log", level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+logger = logging.getLogger(__name__)
+
+#------------------------------------------------------------------------------------------------
 def getImages(search, limit=30, outDir=None):
-	print('\n' + "--" * 50)
-	print(f"Keyword:{search}\n")
-	
 	try:
-		print("Creating directory...", end="")
-		if outDir == None:
-			os.mkdir(search)
-		else:
-			os.mkdir(f"{outDir}/{search}")
-		print("Done")
-	except FileExistsError:
-		print("\nDirectory already exits")
+		print("\033[96m"+ f"Keyword:{search}" +"\033[00m\n") 
+		logger.info(f"Keyword:{search}")
+		
+		try:
+			print("Creating directory...", end="")
+			if outDir == None:
+				os.mkdir(search)
+			else:
+				os.mkdir(f"{outDir}/{search}")
+			print("Done")
+		except FileExistsError:
+			print("\nDirectory already exits")
 
-	url = f"https://www.google.com/search?q={search}&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjozNPH4J3rAhVUU30KHXRzDSoQ_AUoAXoECBEQAw&biw=1366&bih=625"       
-	response = requests.request("GET", url, headers=headers)
-	srcExtractor.feed(response.text)
-	len_src = len(srcExtractor.src)
+		url = f"https://www.google.com/search?q={search}&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjozNPH4J3rAhVUU30KHXRzDSoQ_AUoAXoECBEQAw&biw=1366&bih=625"       
+		response = requests.request("GET", url, headers=headers)
+		srcExtractor.feed(response.text)
+		len_src = len(srcExtractor.src)
 
-	print(f"Number of links found: {len_src}")
+		print(f"Number of links found: {len_src}")
+		logger.info(f"Number of links found: {len_src}")
 
-	count = 0
-	for each_src in tqdm(srcExtractor.src[:limit], bar_format='{l_bar}{bar:20}{r_bar}{bar:-10b}'):
-		response = http.request('GET', each_src)
-		img_data = BytesIO(response.data)
-		image = Image.open(img_data).convert("RGBA")
+		count = 0
+		for each_src in tqdm(srcExtractor.src[:limit], bar_format='{l_bar}{bar:20}{r_bar}{bar:-10b}'):
+			response = http.request('GET', each_src)
+			img_data = BytesIO(response.data)
+			image = Image.open(img_data).convert("RGBA")
 
-		if outDir == None:
-			image.save(f"{search}/{count+1}.png")
-		else:
-			image.save(f"{outDir}/{search}/{count+1}.png")
-		count+=1
+			if outDir == None:
+				image.save(f"{search}/{count+1}.png")
+			else:
+				image.save(f"{outDir}/{search}/{count+1}.png")
+			count+=1
 
-	print(f"Downloaded {count}/{limit} images")
-	srcExtractor.src = []  
+		print(f"Downloaded {count}/{limit} images")
+		logger.info(f"Downloaded {count}/{limit} images")
+		
+		srcExtractor.src = [] 
+		print("\033[97m" + 70 * '-' + "\033[00m") 
+
+	except:
+		print("\033[31m"+ "Something went wrong!\nPlease check passed options" +"\033[00m")
+		sys.exit()
 
 #------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
+	print("\033[97m" + 70 * '-' + "\033[00m")
+	print("\033[97m Google Image Scraper\033[00m")
+	print(" Need help? Use the -h or -help option")
+	print(" Created by Rutuparn Pawar <InputBlackBoxOutput>")
+	print("\033[97m" + 70 * '-' + "\033[00m")
 	# getImages("fish")
 
 	if args.f == None:
@@ -106,9 +125,10 @@ if __name__ == "__main__":
 					if each != "":
 						getImages(each, args.l, args.outdir)
 		except FileNotFoundError:
-			print(f"File not found: {args.f}")
+			print("\033[31m"+ f"File not found: {args.f}" +"\033[00m")
 			sys.exit()
 		except:
-			print("Something went wrong!")
+			print("\033[31m"+ "Something went wrong!\nPlease check passed options" +"\033[00m")
+			sys.exit()
 #------------------------------------------------------------------------------------------------
 #EOF
