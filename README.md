@@ -3,6 +3,11 @@
 
 *Note: It is advised to use this image scraper for learning/research purposes only.*
 
+## Features
+1. A file containing a list of keywords can be given to the program
+1. A log file is created to find and remove bugs if any
+1. Coloured text output so it is easier to find relevant information quickly
+
 ## Demo: Scraping 10 cat images
 ![demo.gif](demo.gif)
 
