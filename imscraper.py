@@ -10,23 +10,32 @@
 # the robot exclusion protocol. It tells web robots which pages not to crawl.
 
 #------------------------------------------------------------------------------------------------
-import requests
 
-import urllib3
-http = urllib3.PoolManager()
-
-import warnings
-warnings.filterwarnings('ignore', message='Unverified HTTPS request')
-
-from io import BytesIO
-import PIL.Image as Image
 
 from html.parser import HTMLParser
 from html.entities import name2codepoint
 
 import os, sys, argparse
-from tqdm import tqdm
 import string
+
+from io import BytesIO
+
+import warnings
+warnings.filterwarnings('ignore', message='Unverified HTTPS request')
+
+
+try:
+	import requests
+	from tqdm import tqdm
+
+	import urllib3
+	http = urllib3.PoolManager()
+
+	import PIL.Image as Image
+
+except ImportError:
+	print("Looks like the modules required by the program could not be found!\nPlease run 'pip install -r requirements.txt' to install the required modules")
+	sys.exit()
 
 #------------------------------------------------------------------------------------------------
 parser = argparse.ArgumentParser(description="Scrape images from 'Google Images' webpage")
@@ -109,8 +118,8 @@ def getImages(search, limit=30, outDir=None):
 if __name__ == "__main__":
 	print("\033[97m" + 70 * '-' + "\033[00m")
 	print("\033[97m Google Image Scraper\033[00m")
-	print(" Need help? Use the -h or -help option")
-	print(" Created by Rutuparn Pawar <InputBlackBoxOutput>")
+	print(" Need help? Use the -h or --help option")
+	print(" Created by Rutuparn Pawar (InputBlackBoxOutput)")
 	print("\033[97m" + 70 * '-' + "\033[00m")
 	# getImages("fish")
 
