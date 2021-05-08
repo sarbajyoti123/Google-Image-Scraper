@@ -80,11 +80,13 @@ def getImages(search, limit=30, outDir=None):
 				os.mkdir(search)
 			else:
 				os.mkdir(f"{outDir}/{search}")
-			print("Done")
+			print("Done\n")
 		except FileExistsError:
-			print("\nDirectory already exits")
+			print("\nDirectory already exits\n")
 
-		url = f"https://www.google.com/search?q={search}&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjozNPH4J3rAhVUU30KHXRzDSoQ_AUoAXoECBEQAw&biw=1366&bih=625"       
+		url = f"https://www.google.com/search?tbm=isch&q={search}"
+		print(f"Scraping webpage at URL: {url}")
+
 		response = requests.request("GET", url, headers=headers)
 		srcExtractor.feed(response.text)
 		len_src = len(srcExtractor.src)
@@ -104,7 +106,7 @@ def getImages(search, limit=30, outDir=None):
 				image.save(f"{outDir}/{search}/{count+1}.png")
 			count+=1
 
-		print(f"Downloaded {count}/{limit} images")
+		print("\033[32m" + f"\nDownloaded {count}/{limit} images" + "\033[32m")
 		logger.info(f"Downloaded {count}/{limit} images")
 		
 		srcExtractor.src = [] 
