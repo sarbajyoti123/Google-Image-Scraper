@@ -12,10 +12,12 @@
 ## Demo: Scraping 10 cat images
 ![demo.gif](demo.gif)
 
-## How to use?
+## How to use the scraper?
 Please read the [manual](https://rutuparn.medium.com/9cf9a5950594?source=friends_link&sk=7e353dd0ffe00a765d97fd508656fc61)
 
 ## Alternate approach: Google Colab
+Use this approach if you want to offload the work to the cloud
+
 1. Upload the colab.ipynb to Colab
 1. Change the path to the directory where you want to store the images
 1. Change the keyword. (Use iterations in case of multiple keywords)
