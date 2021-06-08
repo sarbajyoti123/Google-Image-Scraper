@@ -23,6 +23,7 @@ from io import BytesIO
 import warnings
 warnings.filterwarnings('ignore', message='Unverified HTTPS request')
 
+import utils
 
 try:
 	import requests
@@ -43,7 +44,7 @@ group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-k', type=str, help="keyword to search")
 group.add_argument('-f', type=str, help="file with list of keywords")
 parser.add_argument('-l', type=int, help="limit the number of images per keyword (default=30)", default=30)
-parser.add_argument('-outdir', type=str, help="output directory", default=None)
+parser.add_argument('-o', type=str, help="output directory", default=None)
 args = parser.parse_args()
 
 #------------------------------------------------------------------------------------------------
@@ -69,18 +70,23 @@ logging.basicConfig(filename="log", level=logging.INFO, format='%(asctime)s - %(
 logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------------------------------------------
-def getImages(search, limit=30, outDir=None):
+def getImages(search, limit=30, outDirectory=None):
 	try:
 		print("\033[96m"+ f"Keyword:{search}" +"\033[00m\n") 
 		logger.info(f"Keyword:{search}")
-		
+			
+
 		try:
 			print("Creating directory...", end="")
-			if outDir == None:
-				os.mkdir(search)
+
+			if outDirectory == None:
+				directory = search
 			else:
-				os.mkdir(f"{outDir}/{search}")
+				directory = f"{outDirectory}/{search}"
+
+			os.mkdir(directory)
 			print("Done\n")
+
 		except FileExistsError:
 			print("\nDirectory already exits\n")
 
@@ -100,16 +106,18 @@ def getImages(search, limit=30, outDir=None):
 			img_data = BytesIO(response.data)
 			image = Image.open(img_data).convert("RGBA")
 
-			if outDir == None:
-				image.save(f"{search}/{count+1}.png")
-			else:
-				image.save(f"{outDir}/{search}/{count+1}.png")
+			image.save(f"{directory}/{count+1}.png")
 			count+=1
 
 		print("\033[32m" + f"\nDownloaded {count}/{limit} images" + "\033[32m")
 		logger.info(f"Downloaded {count}/{limit} images")
 		
 		srcExtractor.src = [] 
+
+		print("Removing duplicate images...", end="")
+		utils.removeDuplicateImages(directory)
+		print("Done\n")
+
 		print("\033[97m" + 70 * '-' + "\033[00m") 
 
 	except:
@@ -126,7 +134,7 @@ if __name__ == "__main__":
 	# getImages("fish")
 
 	if args.f == None:
-		getImages(args.k, args.l, args.outdir)
+		getImages(args.k, args.l, args.o)
 	else:
 		try:
 			with open(args.f, 'r') as infile:
@@ -134,7 +142,9 @@ if __name__ == "__main__":
 
 				for each in keywords:
 					if each != "":
-						getImages(each, args.l, args.outdir)
+						getImages(each, args.l, args.o)
+
+
 		except FileNotFoundError:
 			print("\033[31m"+ f"File not found: {args.f}" +"\033[00m")
 			sys.exit()
